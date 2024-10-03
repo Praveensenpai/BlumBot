@@ -25,8 +25,8 @@ Before setting up the bot, you need to install `uv`. You can do this globally us
 1.  **Clone the Repository**: Open your terminal and run:
 
     ```
-    clone <repository-url>
-    cd <repository-directory>
+    clone https://github.com/Praveensenpai/BlumBot.git
+    cd BlumBot
     ```
 
 2.  **Sync the Environment**: Run the following command to set up the environment with Python 3.10.2:
