@@ -1,0 +1,9 @@
+fake-useragent==1.5.1
+httpx==0.27.2
+loguru==0.7.2
+pyenvloadermeta==1.0.2
+pyrogram==2.0.106
+result==0.17.0
+rich==13.8.1
+tgcrypto==1.2.5
+timecalculator==1.2.1
