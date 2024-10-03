@@ -25,7 +25,7 @@ Before setting up the bot, you need to install `uv`. You can do this globally us
 1.  **Clone the Repository**: Open your terminal and run:
 
     ```
-    clone https://github.com/Praveensenpai/BlumBot.git
+    git clone https://github.com/Praveensenpai/BlumBot.git
     cd BlumBot
     ```
 
