@@ -1,4 +1,5 @@
-# from blum.game import GameActions
+from blum.errors import UserBalanceError
+from blum.game import GameActions
 from blum.farming import FarmingActions
 from blum.platform import Platform
 from blum.blum_models import UserBalance
@@ -26,7 +27,7 @@ class Blum:
             },
         )
         self.farming = FarmingActions(self.session)
-        # self.game = GameActions(self.session)
+        self.game = GameActions(self.session)
 
     async def login(self, tg_client: TGClient) -> bool:
         self.session.headers.pop("Authorization", None)
@@ -58,8 +59,14 @@ class Blum:
         self.session.headers["Authorization"] = f"Bearer {access_token}"
         return True
 
-    async def get_user_balance(self) -> Optional[UserBalance]:
+    async def get_user_balance(self) -> UserBalance:
         resp = await self.session.get(Endpoints.User.BALANCE)
         if resp.status_code == 200:
-            return UserBalance(**resp.json())
+            usr_balance = UserBalance(**resp.json())
+            logger.info(f"Available Balance: {usr_balance.availableBalance}")
+            logger.info(f"Play Passes Left: {usr_balance.playPasses}")
+            return usr_balance
+
         logger.error(f"Error getting user balance : Status Code - {resp.status_code}")
+        logger.error("Failed to retrieve user balance.")
+        raise UserBalanceError("Failed to retrieve user balance.")

@@ -12,32 +12,32 @@ class GameActions:
     def __init__(self, session: httpx.AsyncClient):
         self.session = session
 
-    async def claim_game(self, game_id: str):
+    async def _claim_game(self, game_id: str) -> Optional[bool]:
         logger.info("Claiming game")
+        points = random.randint(Env.MIN_POINTS, Env.MAX_POINTS)
         json_data = {
             "gameId": game_id,
-            "points": random.randint(Env.MIN_POINTS, Env.MAX_POINTS),
+            "points": points,
         }
-        logger.info(json_data)
-
         resp = await self.session.post(Endpoints.Game.CLAIM, json=json_data)
-        logger.success(resp)
-        logger.success(resp.text)
-        logger.success(resp.json())
+        match resp.status_code:
+            case 200:
+                logger.success(f"Successfully claimed {points} points.")
+                return True
 
-    async def start_game(self) -> Optional[str]:
+    async def _start_game(self) -> Optional[str]:
         logger.info("Starting game")
         resp = await self.session.post(Endpoints.Game.START)
-        logger.success(resp)
-        logger.success(resp.json())
         if resp.status_code == 200:
-            return (await resp.json()).get("gameId")
+            return resp.json().get("gameId")
 
-    async def play_game(self):
-        game_id = await self.start_game()
+    async def play_game(self) -> Optional[bool]:
+        game_id = await self._start_game()
         if not game_id:
+            logger.error("Unable to get game ID")
             return
         sleep_time = random.randrange(35, 38)
         logger.info(f"Playing game for {sleep_time} seconds")
         await asyncio.sleep(sleep_time)
-        await self.claim_game(game_id)
+        if await self._claim_game(game_id):
+            return True

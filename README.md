@@ -7,10 +7,7 @@ BlumCryptoBot is a Telegram bot that helps you automate tasks on the Blum platfo
 ### Main Features
 
 - **Farming Management**: Automatically start farming tasks and claim rewards.
-
-### Currently Paused Features
-
-- **Play and Claim Game Rewards**: This feature is currently paused and not available for use.
+- **Play and Claim Game Rewards**: This feature allows the bot to automatically play games on the Blum platform and claim rewards when the points are within the specified range (**MIN_POINTS** to **MAX_POINTS**).
 
 ## Setup Instructions
 
@@ -43,6 +40,8 @@ Before setting up the bot, you need to install `uv`. You can do this globally us
     API_ID=<your_api_id>
     API_HASH=<your_api_hash>
     REF_ID=<your_referral_id>
+    MIN_POINTS=<min_points_for_game>
+    MAX_POINTS=<max_points_for_game>
     ```
 
     - **`SESSION_NAME`**: Choose any name you like for your session. This helps the bot remember your login details. You could use something like your Telegram username.
@@ -50,9 +49,10 @@ Before setting up the bot, you need to install `uv`. You can do this globally us
     - **`API_HASH`**: This will be shown alongside your `API_ID` after creating your application.
     - **`REF_ID`**: This is your referral ID. Generate it by visiting the Blum app and looking for your referral link. It will look like this:
       vbnet
-      Copy code
       `https://t.me/blum/app?startapp=ref_pMt7QOvG1e`
       The `REF_ID` is the part after `startapp=`, so in this case, it's `ref_pMt7QOvG1e`.
+
+    - **`MIN_POINTS`** and **`MAX_POINTS`**: These values define the range of points for playing games and claiming rewards.
 
 4.  **Run the Bot**: Finally, start the bot by running:
 

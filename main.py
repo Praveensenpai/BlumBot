@@ -2,9 +2,9 @@ import asyncio
 from contextlib import suppress
 import datetime
 from random import randint
+import random
 import time
 from blum import Blum
-from blum.blum_models import UserBalance
 from blum.errors import UserBalanceError, LoginError, FarmingTaskError
 from telegram.tgClient import TGClient
 from utils.loggy import logger
@@ -13,15 +13,9 @@ from timecalculator import TimeCalculator
 
 
 class BlumBot:
-    def __init__(self, bot_name: str):
+    def __init__(self, bot_name: str, concurrency: int = 1):
         self.blum = Blum(bot_name)
-
-    async def fetch_user_balance(self) -> UserBalance:
-        usr_balance = await self.blum.get_user_balance()
-        if not usr_balance:
-            logger.error("Failed to retrieve user balance.")
-            raise UserBalanceError("Failed to retrieve user balance.")
-        return usr_balance
+        self.semaphore = asyncio.Semaphore(concurrency)
 
     async def calculate_next_farming_dates(
         self, farming_end_time: int
@@ -35,29 +29,52 @@ class BlumBot:
         return farming_enddt_delayed
 
     async def farming_task(self) -> None:
-        await asyncio.sleep(5)
-        await self.blum.farming.start()
-        await asyncio.sleep(5)
+        async with self.semaphore:
+            await asyncio.sleep(5)
+            await self.blum.farming.start()
+            await asyncio.sleep(5)
+            usr_balance = await self.blum.get_user_balance()
 
-        usr_balance = await self.fetch_user_balance()
-        farming_enddt_delayed = await self.calculate_next_farming_dates(
-            usr_balance.farming.endTime
-        )
-        sleep_till = time_diff_in_seconds(
-            farming_enddt_delayed, datetime.datetime.now()
-        )
-        if sleep_till > TimeCalculator.HOUR * 8:
-            logger.info(
-                "Sleeping duration is greater than 8 hours so adjusted to 8 hours sleep"
+            farming_enddt_delayed = await self.calculate_next_farming_dates(
+                usr_balance.farming.endTime
             )
-        sleep_till = min(sleep_till, TimeCalculator.HOUR * 8)
+            sleep_till = time_diff_in_seconds(
+                farming_enddt_delayed, datetime.datetime.now()
+            )
+            if sleep_till > TimeCalculator.HOUR * 8:
+                logger.info(
+                    "Sleeping duration is greater than 8 hours so adjusted to 8 hours sleep"
+                )
+            sleep_till = min(sleep_till, TimeCalculator.HOUR * 8)
         if sleep_till > 0:
             logger.info(f"Sleeping for {sleep_till} seconds")
             await asyncio.sleep(sleep_till)
             return
 
-        await asyncio.sleep(5)
-        await self.blum.farming.claim()
+        async with self.semaphore:
+            await asyncio.sleep(5)
+            await self.blum.farming.claim()
+
+    async def gaming_task(self):
+        async with self.semaphore:
+            await asyncio.sleep(5)
+            usr_balance = await self.blum.get_user_balance()
+            for play_count in range(1, usr_balance.playPasses + 1):
+                logger.success(f"Playing Game: [{play_count}]")
+                is_success = await self.blum.game.play_game()
+                if is_success:
+                    logger.success(f"Completed Playing Game: [{play_count}]")
+                    sleep_delay = random.randint(10, 30)
+                    logger.info(
+                        f"Let's take {sleep_delay} seconds rest before continuing"
+                    )
+                    await asyncio.sleep(sleep_delay)
+                if not is_success:
+                    logger.info("Failed to play game.")
+                    return
+
+            usr_balance = await self.blum.get_user_balance()
+            logger.info("Finished playing games successfully.")
 
     async def handle_error(self, e: Exception):
         match e:
@@ -77,7 +94,11 @@ class BlumBot:
                 if not is_logged_in:
                     logger.error("Failed to log in.")
                     raise LoginError("Failed to log in.")
-                await self.farming_task()
+                tasks = [
+                    self.farming_task(),
+                    self.gaming_task(),
+                ]
+                await asyncio.gather(*tasks)
 
             except (LoginError, UserBalanceError, FarmingTaskError) as e:
                 logger.error(f"An error occurred: {e}")

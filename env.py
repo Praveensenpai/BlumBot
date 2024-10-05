@@ -6,5 +6,5 @@ class Env(metaclass=EnvLoaderMeta):
     API_ID: int
     API_HASH: str
     REF_ID: str
-    # MIN_POINTS: int
-    # MAX_POINTS: int
+    MIN_POINTS: int
+    MAX_POINTS: int
