@@ -86,7 +86,7 @@ If you prefer using `pip` instead of `uv`, follow these steps:
     - **macOS/Linux**:
 
       ```
-      source venv/bin/activate`
+      source venv/bin/activate
       ```
 
 4.  **Install the Required Packages**:
