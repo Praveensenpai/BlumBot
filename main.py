@@ -56,9 +56,14 @@ class BlumBot:
             await self.blum.farming.claim()
 
     async def gaming_task(self):
+        await asyncio.sleep(1)
         async with self.semaphore:
             await asyncio.sleep(5)
             usr_balance = await self.blum.get_user_balance()
+
+            if not usr_balance.playPasses:
+                logger.info("No Game play passes left.")
+                return
             for play_count in range(1, usr_balance.playPasses + 1):
                 logger.success(f"Playing Game: [{play_count}]")
                 is_success = await self.blum.game.play_game()

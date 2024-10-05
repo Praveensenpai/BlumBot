@@ -2,7 +2,7 @@ from blum.errors import UserBalanceError
 from blum.game import GameActions
 from blum.farming import FarmingActions
 from blum.platform import Platform
-from blum.blum_models import UserBalance
+from blum.blum_models import UserBalance, ValidationError
 from fake_useragent import UserAgent
 import httpx
 from typing import Optional
@@ -62,11 +62,14 @@ class Blum:
     async def get_user_balance(self) -> UserBalance:
         resp = await self.session.get(Endpoints.User.BALANCE)
         if resp.status_code == 200:
-            usr_balance = UserBalance(**resp.json())
-            logger.info(f"Available Balance: {usr_balance.availableBalance}")
-            logger.info(f"Play Passes Left: {usr_balance.playPasses}")
-            return usr_balance
+            try:
+                usr_balance = UserBalance(**resp.json())
+                logger.info(f"Available Balance: {usr_balance.availableBalance}")
+                logger.info(f"Play Passes Left: {usr_balance.playPasses}")
+                return usr_balance
+            except ValidationError as e:
+                logger.error(f"Error Getting User Balance - Reason: Validation error: {e}")
 
-        logger.error(f"Error getting user balance : Status Code - {resp.status_code}")
-        logger.error("Failed to retrieve user balance.")
-        raise UserBalanceError("Failed to retrieve user balance.")
+        logger.error(f"Error getting User balance : Status Code - {resp.status_code}")
+        logger.error("Failed to retrieve User balance.")
+        raise UserBalanceError("Failed to retrieve User balance.")
