@@ -1,6 +1,6 @@
-# BlumCryptoBot
+# BlumBot
 
-BlumCryptoBot is a Telegram bot that helps you automate tasks on the Blum platform. It’s built with Python and uses the Pyrogram library.
+BlumBot is a Telegram bot that helps you automate tasks on the Blum platform. It’s built with Python and uses the Pyrogram library.
 
 ## Features
 
