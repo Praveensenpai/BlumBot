@@ -68,8 +68,25 @@ class Blum:
                 logger.info(f"Play Passes Left: {usr_balance.playPasses}")
                 return usr_balance
             except ValidationError as e:
-                logger.error(f"Error Getting User Balance - Reason: Validation error: {e}")
+                logger.error(
+                    f"Error Getting User Balance - Reason: Validation error: {e}"
+                )
 
         logger.error(f"Error getting User balance : Status Code - {resp.status_code}")
         logger.error("Failed to retrieve User balance.")
         raise UserBalanceError("Failed to retrieve User balance.")
+
+    async def claim_daily_reward(self) -> bool:
+        resp = await self.session.post(Endpoints.CLAIM_DAILY_REWARDS)
+        match resp.status_code:
+            case 200:
+                logger.info("Successfully claimed daily reward")
+                return True
+            case 400:
+                logger.info("Already claimed daily reward [Status]")
+                return True
+            case _:
+                logger.error(
+                    f"Failed to claim daily rewards. Status Code: {resp.status_code}"
+                )
+                return False

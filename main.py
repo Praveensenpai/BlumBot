@@ -14,6 +14,7 @@ from timecalculator import TimeCalculator
 
 class BlumBot:
     def __init__(self, bot_name: str, concurrency: int = 1):
+        self.last_claim_date = None
         self.blum = Blum(bot_name)
         self.semaphore = asyncio.Semaphore(concurrency)
 
@@ -29,6 +30,7 @@ class BlumBot:
         return farming_enddt_delayed
 
     async def farming_task(self) -> None:
+        await asyncio.sleep(1)
         async with self.semaphore:
             await asyncio.sleep(5)
             await self.blum.farming.start()
@@ -71,7 +73,7 @@ class BlumBot:
                     logger.success(f"Completed Playing Game: [{play_count}]")
                     sleep_delay = random.randint(10, 30)
                     logger.info(
-                        f"Let's take {sleep_delay} seconds rest before continuing"
+                        f"Let's take {sleep_delay} seconds rest before continuing gaming"
                     )
                     await asyncio.sleep(sleep_delay)
                 if not is_success:
@@ -92,6 +94,20 @@ class BlumBot:
             case _:
                 logger.error(f"An unexpected error occurred: {e}")
 
+    async def claim_daily_reward_task(self):
+        async with self.semaphore:
+            current_date = datetime.datetime.now().date()
+
+            if self.last_claim_date != current_date:
+                is_claimed = await self.blum.claim_daily_reward()
+                if is_claimed:
+                    self.last_claim_date = current_date
+                else:
+                    logger.error("Failed to claim daily reward.")
+            else:
+                logger.info("Daily reward already claimed today.")
+            await asyncio.sleep(5)
+
     async def main(self):
         while True:
             try:
@@ -99,7 +115,9 @@ class BlumBot:
                 if not is_logged_in:
                     logger.error("Failed to log in.")
                     raise LoginError("Failed to log in.")
+
                 tasks = [
+                    self.claim_daily_reward_task(),
                     self.farming_task(),
                     self.gaming_task(),
                 ]

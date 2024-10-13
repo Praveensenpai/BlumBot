@@ -22,6 +22,9 @@ class Game:
 
 
 class Endpoints:
+    CLAIM_DAILY_REWARDS: Final[str] = (
+        "https://game-domain.blum.codes/api/v1/daily-reward?offset=-180"
+    )
     Auth = Auth()
     Farming = Farming()
     User = User()
