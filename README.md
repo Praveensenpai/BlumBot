@@ -8,6 +8,7 @@ BlumBot is a Telegram bot that helps you automate tasks on the Blum platform. It
 
 - **Farming Management**: Automatically start farming tasks and claim rewards.
 - **Play and Claim Game Rewards**: This feature allows the bot to automatically play games on the Blum platform and claim rewards when the points are within the specified range (**MIN_POINTS** to **MAX_POINTS**).
+- **Daily Rewards**: Automatically claims daily rewards and calculates the next claim time.
 
 ## Setup Instructions
 
